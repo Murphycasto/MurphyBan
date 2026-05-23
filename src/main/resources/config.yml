@@ -1,0 +1,30 @@
+# Enables verbose [DEBUG] logging from BanLogger. Pickup is live via /murphyban reload.
+# Leave off in production; turn on temporarily when investigating a bug report.
+debug: false
+
+database:
+  type: sqlite  # sqlite or mysql
+  host: localhost
+  port: 3306
+  name: murphyban
+  username: root
+  password: ''
+
+mute:
+  # Commands a muted player is still allowed to run.
+  # Useful for auth plugins (AuthMe etc.) where login/register must work even while muted.
+  # Match command names without the leading slash, case-insensitive.
+  command-whitelist:
+    - register
+    - login
+
+alts:
+  auto-ban: false
+  notify-staff: true
+
+warns:
+  threshold: 3
+  auto-punish: mute  # mute or ban
+  auto-punish-duration: 1d
+  # Warns older than this do not count toward the threshold. Set to 0 to never expire.
+  expire-after: 30d

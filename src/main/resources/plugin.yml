@@ -1,0 +1,117 @@
+name: MurphyBan
+version: ${project.version}
+main: com.murphy.ban.MurphyBan
+api-version: '1.21'
+author: Murphycasto
+description: Punishment management plugin with alt detection and warn escalation.
+softdepend: [PlaceholderAPI]
+
+commands:
+  ban:
+    description: Ban a player.
+    usage: /ban <player> [duration] [reason]
+    permission: murphyban.ban
+    aliases: [ban]
+  ipban:
+    description: IP-ban a player.
+    usage: /ipban <player> [duration] [reason]
+    permission: murphyban.ipban
+    aliases: [ipban, banip]
+  mute:
+    description: Mute a player.
+    usage: /mute <player> [duration] [reason]
+    permission: murphyban.mute
+    aliases: [mute]
+  kick:
+    description: Kick a player.
+    usage: /kick <player> [reason]
+    permission: murphyban.kick
+    aliases: [kick]
+  warn:
+    description: Warn a player.
+    usage: /warn <player> [reason]
+    permission: murphyban.warn
+    aliases: [warn]
+  unban:
+    description: Unban a player.
+    usage: /unban <player>
+    permission: murphyban.unban
+    aliases: [unban, pardon]
+  unbanip:
+    description: Remove an active IP ban (by player name or raw IP).
+    usage: /unbanip <player|ip>
+    permission: murphyban.ipban
+    aliases: [unbanip, pardonip]
+  unmute:
+    description: Unmute a player.
+    usage: /unmute <player>
+    permission: murphyban.unmute
+    aliases: [unmute]
+  unwarn:
+    description: Remove a warn from a player.
+    usage: /unwarn <player> [id]
+    permission: murphyban.unwarn
+  check:
+    description: Check a player's active punishments.
+    usage: /check <player>
+    permission: murphyban.history
+    aliases: [check, status]
+  history:
+    description: View a player's punishment history.
+    usage: /history <player>
+    permission: murphyban.history
+    aliases: [history, ph]
+  blame:
+    description: Show a player's last few punishments and who issued them.
+    usage: /blame <player>
+    permission: murphyban.history
+  staffhistory:
+    description: View a staff member's punishment activity.
+    usage: /staffhistory <staff>
+    permission: murphyban.history
+    aliases: [staffhistory, sh]
+  alts:
+    description: View a player's known alt accounts.
+    usage: /alts <player>
+    permission: murphyban.alts
+  murphyban:
+    description: MurphyBan admin command.
+    usage: /murphyban <about|reload>
+
+permissions:
+  murphyban.ban:
+    description: Allows banning players.
+    default: op
+  murphyban.ipban:
+    description: Allows IP-banning players.
+    default: op
+  murphyban.mute:
+    description: Allows muting players.
+    default: op
+  murphyban.kick:
+    description: Allows kicking players.
+    default: op
+  murphyban.warn:
+    description: Allows warning players.
+    default: op
+  murphyban.unban:
+    description: Allows unbanning players.
+    default: op
+  murphyban.unmute:
+    description: Allows unmuting players.
+    default: op
+  murphyban.unwarn:
+    description: Allows removing warns.
+    default: op
+  murphyban.history:
+    description: Allows viewing punishment history.
+    default: op
+  murphyban.alts:
+    description: Allows viewing alt accounts.
+    default: op
+  murphyban.alerts:
+    description: Receives staff alerts (alt joins, etc.).
+    default: op
+  murphyban.admin:
+    description: Full admin access to MurphyBan.
+    default: op
