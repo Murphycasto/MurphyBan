@@ -4,16 +4,17 @@ import com.murphy.ban.MurphyBan;
 import com.murphy.ban.model.Punishment;
 import com.murphy.ban.model.PunishmentType;
 import com.murphy.ban.util.BanLogger;
+import com.murphy.ban.util.PunishmentFormatter;
 import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.MiniMessage;
-import org.bukkit.OfflinePlayer;
 import org.bukkit.command.CommandSender;
 
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.UUID;
 
 public class UnwarnCommand extends BaseCommand {
 
@@ -34,15 +35,11 @@ public class UnwarnCommand extends BaseCommand {
         if (!requirePermission(sender, "murphyban.unwarn")) {
             return;
         }
-        Optional<OfflinePlayer> targetOpt = resolvePlayer(sender, args[0]);
-        if (targetOpt.isEmpty()) {
-            return;
-        }
-        OfflinePlayer target = targetOpt.get();
-        String playerName = target.getName() != null ? target.getName() : args[0];
+        String playerName = args[0];
+        UUID uuid = resolveUUID(playerName);
 
         if (args.length == 1) {
-            listActiveWarns(sender, target, playerName);
+            listActiveWarns(sender, uuid, playerName);
             return;
         }
 
@@ -55,7 +52,7 @@ public class UnwarnCommand extends BaseCommand {
         }
 
         String issuer = issuerName(sender);
-        MurphyBan.getDatabase().getHistory(target.getUniqueId())
+        MurphyBan.getDatabase().getHistory(uuid)
                 .thenCompose(history -> {
                     Optional<Punishment> match = history.stream()
                             .filter(p -> p.id() == warnId
@@ -84,8 +81,8 @@ public class UnwarnCommand extends BaseCommand {
                 });
     }
 
-    private void listActiveWarns(CommandSender sender, OfflinePlayer target, String playerName) {
-        MurphyBan.getDatabase().getHistory(target.getUniqueId())
+    private void listActiveWarns(CommandSender sender, UUID uuid, String playerName) {
+        MurphyBan.getDatabase().getHistory(uuid)
                 .thenAccept(history -> {
                     List<Punishment> warns = history.stream()
                             .filter(p -> p.type() == PunishmentType.WARN && p.active() && !p.isExpired())
@@ -118,7 +115,7 @@ public class UnwarnCommand extends BaseCommand {
     }
 
     private String escape(String s) {
-        return s.replace("<", "\\<");
+        return PunishmentFormatter.sanitize(s).replace("<", "\\<");
     }
 
     @Override

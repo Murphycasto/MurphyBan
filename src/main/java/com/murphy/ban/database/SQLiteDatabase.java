@@ -136,6 +136,47 @@ public class SQLiteDatabase implements DatabaseManager {
             WHERE type = 'WARN' AND active = 1 AND issued_at < ?
             """;
 
+    private static final String SELECT_ALL_BY_TYPE = """
+            SELECT id, uuid, player_name, ip, type, reason, issued_by, issued_at, expires_at, active, revoked_by, revoked_at
+            FROM punishments
+            WHERE type = ?
+            ORDER BY issued_at DESC
+            """;
+
+    private static final String SELECT_ACTIVE_BY_TYPE = """
+            SELECT id, uuid, player_name, ip, type, reason, issued_by, issued_at, expires_at, active, revoked_by, revoked_at
+            FROM punishments
+            WHERE type = ? AND active = 1
+            ORDER BY issued_at DESC
+            """;
+
+    private static final String SELECT_INACTIVE_BY_TYPE = """
+            SELECT id, uuid, player_name, ip, type, reason, issued_by, issued_at, expires_at, active, revoked_by, revoked_at
+            FROM punishments
+            WHERE type = ? AND active = 0
+            ORDER BY issued_at DESC
+            """;
+
+    private static final String SELECT_ALL_ANY_TYPE = """
+            SELECT id, uuid, player_name, ip, type, reason, issued_by, issued_at, expires_at, active, revoked_by, revoked_at
+            FROM punishments
+            ORDER BY issued_at DESC
+            """;
+
+    private static final String SELECT_ACTIVE_ANY_TYPE = """
+            SELECT id, uuid, player_name, ip, type, reason, issued_by, issued_at, expires_at, active, revoked_by, revoked_at
+            FROM punishments
+            WHERE active = 1
+            ORDER BY issued_at DESC
+            """;
+
+    private static final String SELECT_INACTIVE_ANY_TYPE = """
+            SELECT id, uuid, player_name, ip, type, reason, issued_by, issued_at, expires_at, active, revoked_by, revoked_at
+            FROM punishments
+            WHERE active = 0
+            ORDER BY issued_at DESC
+            """;
+
     private final MurphyBan plugin;
     private final Logger logger;
     private HikariDataSource dataSource;
@@ -493,6 +534,72 @@ public class SQLiteDatabase implements DatabaseManager {
             } catch (SQLException ex) {
                 logger.log(Level.SEVERE, "getActiveWarnsBefore failed cutoff=" + issuedAtCutoff, ex);
                 throw new RuntimeException("Failed to query age-expired warns", ex);
+            }
+            return results;
+        });
+    }
+
+    @Override
+    public CompletableFuture<List<Punishment>> getAllPunishments(PunishmentType type) {
+        return queryByType(SELECT_ALL_BY_TYPE, type, "getAllPunishments");
+    }
+
+    @Override
+    public CompletableFuture<List<Punishment>> getActivePunishments(PunishmentType type) {
+        return queryByType(SELECT_ACTIVE_BY_TYPE, type, "getActivePunishments");
+    }
+
+    @Override
+    public CompletableFuture<List<Punishment>> getInactivePunishments(PunishmentType type) {
+        return queryByType(SELECT_INACTIVE_BY_TYPE, type, "getInactivePunishments");
+    }
+
+    @Override
+    public CompletableFuture<List<Punishment>> getAllPunishmentsAllTypes() {
+        return queryNoParam(SELECT_ALL_ANY_TYPE, "getAllPunishmentsAllTypes");
+    }
+
+    @Override
+    public CompletableFuture<List<Punishment>> getActivePunishmentsAllTypes() {
+        return queryNoParam(SELECT_ACTIVE_ANY_TYPE, "getActivePunishmentsAllTypes");
+    }
+
+    @Override
+    public CompletableFuture<List<Punishment>> getInactivePunishmentsAllTypes() {
+        return queryNoParam(SELECT_INACTIVE_ANY_TYPE, "getInactivePunishmentsAllTypes");
+    }
+
+    private CompletableFuture<List<Punishment>> queryByType(String sql, PunishmentType type, String label) {
+        return CompletableFuture.supplyAsync(() -> {
+            List<Punishment> results = new ArrayList<>();
+            try (Connection conn = dataSource.getConnection();
+                 PreparedStatement ps = conn.prepareStatement(sql)) {
+                ps.setString(1, type.name());
+                try (ResultSet rs = ps.executeQuery()) {
+                    while (rs.next()) {
+                        results.add(rowToPunishment(rs));
+                    }
+                }
+            } catch (SQLException ex) {
+                logger.log(Level.SEVERE, label + " failed for type=" + type, ex);
+                throw new RuntimeException("Failed to query " + label, ex);
+            }
+            return results;
+        });
+    }
+
+    private CompletableFuture<List<Punishment>> queryNoParam(String sql, String label) {
+        return CompletableFuture.supplyAsync(() -> {
+            List<Punishment> results = new ArrayList<>();
+            try (Connection conn = dataSource.getConnection();
+                 PreparedStatement ps = conn.prepareStatement(sql);
+                 ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    results.add(rowToPunishment(rs));
+                }
+            } catch (SQLException ex) {
+                logger.log(Level.SEVERE, label + " failed", ex);
+                throw new RuntimeException("Failed to query " + label, ex);
             }
             return results;
         });

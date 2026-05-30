@@ -4,14 +4,13 @@ import com.murphy.ban.MurphyBan;
 import com.murphy.ban.gui.HistoryGUI;
 import com.murphy.ban.util.BanLogger;
 import org.bukkit.Bukkit;
-import org.bukkit.OfflinePlayer;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
+import java.util.UUID;
 
 public class HistoryCommand extends BaseCommand {
 
@@ -34,15 +33,11 @@ public class HistoryCommand extends BaseCommand {
         if (!requirePlayer(sender)) {
             return;
         }
-        Optional<OfflinePlayer> targetOpt = resolvePlayer(sender, args[0]);
-        if (targetOpt.isEmpty()) {
-            return;
-        }
-        OfflinePlayer target = targetOpt.get();
-        String playerName = target.getName() != null ? target.getName() : args[0];
+        String playerName = args[0];
+        UUID uuid = resolveUUID(playerName);
         Player viewer = (Player) sender;
 
-        MurphyBan.getDatabase().getHistory(target.getUniqueId())
+        MurphyBan.getDatabase().getHistory(uuid)
                 .thenAccept(history -> Bukkit.getScheduler().runTask(plugin, () -> {
                     if (history.isEmpty()) {
                         sendMessage(sender, "no-history", Map.of("player", playerName));

@@ -8,6 +8,7 @@ import com.murphy.ban.model.Punishment;
 import com.murphy.ban.model.PunishmentType;
 import com.murphy.ban.util.BanLogger;
 import com.murphy.ban.util.DurationParser;
+import com.murphy.ban.util.PunishmentFormatter;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import org.bukkit.Bukkit;
@@ -105,9 +106,9 @@ public class PunishmentService {
                             if (online != null && online.isOnline()) {
                                 Map<String, String> ph = new HashMap<>();
                                 ph.put("player", online.getName());
-                                ph.put("reason", reason);
+                                ph.put("reason", PunishmentFormatter.sanitize(reason));
                                 ph.put("expires", p.getFormattedExpiry());
-                                ph.put("issued_by", issuedBy);
+                                ph.put("issued_by", PunishmentFormatter.sanitize(issuedBy));
                                 ph.put("duration", p.getFormattedDuration());
                                 Component banScreen = messages.get("ban-screen", ph);
                                 online.kickPlayer(LegacyComponentSerializer.legacySection().serialize(banScreen));
@@ -146,7 +147,8 @@ public class PunishmentService {
             Bukkit.getScheduler().runTask(plugin, () -> {
                 Player online = Bukkit.getPlayer(uuid);
                 if (online != null && online.isOnline()) {
-                    Component screen = messages.get("kick-message", Map.of("reason", reason));
+                    Component screen = messages.get("kick-message",
+                            Map.of("reason", PunishmentFormatter.sanitize(reason)));
                     online.kickPlayer(LegacyComponentSerializer.legacySection().serialize(screen));
                 }
             });
@@ -227,9 +229,9 @@ public class PunishmentService {
         return CompletableFuture.allOf(futures);
     }
 
-    public CompletableFuture<Boolean> unban(OfflinePlayer target, String issuedBy) {
-        BanLogger.debug("PunishmentService.unban: uuid=" + target.getUniqueId() + " issuedBy=" + issuedBy);
-        return db.getActivePunishment(target.getUniqueId(), PunishmentType.BAN)
+    public CompletableFuture<Boolean> unban(UUID uuid, String issuedBy) {
+        BanLogger.debug("PunishmentService.unban: uuid=" + uuid + " issuedBy=" + issuedBy);
+        return db.getActivePunishment(uuid, PunishmentType.BAN)
                 .thenCompose(existing -> {
                     if (existing.isEmpty()) {
                         return CompletableFuture.completedFuture(false);
@@ -251,8 +253,7 @@ public class PunishmentService {
                 .whenComplete((v, ex) -> logIfFailed("unIPBan", ex));
     }
 
-    public CompletableFuture<Boolean> unmute(OfflinePlayer target, String issuedBy) {
-        UUID uuid = target.getUniqueId();
+    public CompletableFuture<Boolean> unmute(UUID uuid, String issuedBy) {
         BanLogger.debug("PunishmentService.unmute: uuid=" + uuid + " issuedBy=" + issuedBy);
         return db.getActivePunishment(uuid, PunishmentType.MUTE)
                 .thenCompose(existing -> {
@@ -307,9 +308,9 @@ public class PunishmentService {
             }
             Map<String, String> ph = new HashMap<>();
             ph.put("player", name);
-            ph.put("reason", p.reason());
+            ph.put("reason", PunishmentFormatter.sanitize(p.reason()));
             ph.put("expires", p.getFormattedExpiry());
-            ph.put("issued_by", p.issuedBy());
+            ph.put("issued_by", PunishmentFormatter.sanitize(p.issuedBy()));
             ph.put("duration", p.getFormattedDuration());
             Component banScreen = messages.get("ban-screen", ph);
             online.kickPlayer(LegacyComponentSerializer.legacySection().serialize(banScreen));
@@ -323,9 +324,9 @@ public class PunishmentService {
 
     private void broadcastStaff(String messageKey, Punishment p, String issuedBy) {
         Map<String, String> ph = Map.of(
-                "player", p.playerName(),
-                "staff", issuedBy,
-                "reason", p.reason());
+                "player", PunishmentFormatter.sanitize(p.playerName()),
+                "staff", PunishmentFormatter.sanitize(issuedBy),
+                "reason", PunishmentFormatter.sanitize(p.reason()));
         Component msg = messages.get(messageKey, ph);
         Bukkit.getScheduler().runTask(plugin, () -> {
             for (Player online : Bukkit.getOnlinePlayers()) {
@@ -338,8 +339,8 @@ public class PunishmentService {
 
     private Map<String, String> reasonPlaceholders(Punishment p, String issuedBy) {
         return Map.of(
-                "reason", p.reason(),
-                "staff", issuedBy,
+                "reason", PunishmentFormatter.sanitize(p.reason()),
+                "staff", PunishmentFormatter.sanitize(issuedBy),
                 "expires", p.getFormattedExpiry());
     }
 

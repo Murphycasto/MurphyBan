@@ -41,5 +41,6 @@ staff-alert-warn: "{prefix}<gray>[STAFF] <yellow>{player}</yellow> has been warn
 no-history: "{prefix}<gray><white>{player}</white> has no punishment history."
 no-alts: "{prefix}<gray>No alternate accounts found for <white>{player}</white>."
 no-staff-history: "{prefix}<gray><white>{staff}</white> has not issued any punishments."
+no-punishments: "{prefix}<gray>No punishments found matching the current filter."
 history-empty-page: "{prefix}<gray>No entries on this page."
 reload-success: "{prefix}<green>Configuration and messages reloaded successfully."

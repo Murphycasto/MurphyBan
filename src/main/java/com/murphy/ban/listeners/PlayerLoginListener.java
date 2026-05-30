@@ -5,6 +5,7 @@ import com.murphy.ban.MurphyBan;
 import com.murphy.ban.database.DatabaseManager;
 import com.murphy.ban.model.Punishment;
 import com.murphy.ban.model.PunishmentType;
+import com.murphy.ban.util.PunishmentFormatter;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import org.bukkit.Bukkit;
@@ -127,7 +128,7 @@ public class PlayerLoginListener implements Listener {
         if (cfg.isNotifyStaff()) {
             Map<String, String> placeholders = Map.of(
                     "joiner", name,
-                    "banned", originalBan.playerName());
+                    "banned", PunishmentFormatter.sanitize(originalBan.playerName()));
             Bukkit.getScheduler().runTask(plugin, () -> broadcastAltAlert(placeholders));
         }
 
@@ -170,9 +171,9 @@ public class PlayerLoginListener implements Listener {
     private String banScreen(String name, Punishment p) {
         Map<String, String> placeholders = new HashMap<>();
         placeholders.put("player", name);
-        placeholders.put("reason", p.reason());
+        placeholders.put("reason", PunishmentFormatter.sanitize(p.reason()));
         placeholders.put("expires", p.getFormattedExpiry());
-        placeholders.put("issued_by", p.issuedBy());
+        placeholders.put("issued_by", PunishmentFormatter.sanitize(p.issuedBy()));
         placeholders.put("duration", p.getFormattedDuration());
         Component c = plugin.getMessageManager().get("ban-screen", placeholders);
         return LegacyComponentSerializer.legacySection().serialize(c);

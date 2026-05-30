@@ -46,4 +46,16 @@ public interface DatabaseManager {
     CompletableFuture<List<Punishment>> getExpiredActivePunishments();
 
     CompletableFuture<List<Punishment>> getActiveWarnsBefore(long issuedAtCutoff);
+
+    CompletableFuture<List<Punishment>> getAllPunishments(PunishmentType type);
+
+    CompletableFuture<List<Punishment>> getActivePunishments(PunishmentType type);
+
+    CompletableFuture<List<Punishment>> getInactivePunishments(PunishmentType type);
+
+    CompletableFuture<List<Punishment>> getAllPunishmentsAllTypes();
+
+    CompletableFuture<List<Punishment>> getActivePunishmentsAllTypes();
+
+    CompletableFuture<List<Punishment>> getInactivePunishmentsAllTypes();
 }

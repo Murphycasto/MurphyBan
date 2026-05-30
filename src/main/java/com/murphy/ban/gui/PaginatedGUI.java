@@ -22,7 +22,7 @@ import java.util.List;
 public abstract class PaginatedGUI implements Listener {
 
     protected static final MiniMessage MM = MiniMessage.miniMessage();
-    private static final LegacyComponentSerializer LEGACY = LegacyComponentSerializer.legacySection();
+    protected static final LegacyComponentSerializer LEGACY = LegacyComponentSerializer.legacySection();
 
     protected final MurphyBan plugin;
     protected final Player viewer;
@@ -31,10 +31,7 @@ public abstract class PaginatedGUI implements Listener {
 
     private int page;
     private Inventory inventory;
-    private int contentSlots;
-    private int prevSlot;
-    private int infoSlot;
-    private int nextSlot;
+    private final int contentSlots;
 
     protected PaginatedGUI(MurphyBan plugin, Player viewer, String titleTemplate, int rowsPerPage) {
         if (rowsPerPage < 2 || rowsPerPage > 6) {
@@ -45,14 +42,15 @@ public abstract class PaginatedGUI implements Listener {
         this.titleTemplate = titleTemplate;
         this.rowsPerPage = rowsPerPage;
         this.contentSlots = rowsPerPage * 9 - 9;
-        this.prevSlot = rowsPerPage * 9 - 9;
-        this.infoSlot = rowsPerPage * 9 - 5;
-        this.nextSlot = rowsPerPage * 9 - 1;
     }
 
     protected abstract List<ItemStack> getItems();
 
     protected abstract void onItemClick(InventoryClickEvent event, int slot, int page);
+
+    protected int getContentSlotCount() {
+        return contentSlots;
+    }
 
     public final void open() {
         String legacyTitle = LEGACY.serialize(MM.deserialize(titleTemplate));
@@ -62,37 +60,74 @@ public abstract class PaginatedGUI implements Listener {
         Bukkit.getPluginManager().registerEvents(this, plugin);
     }
 
+    protected final void rebuild() {
+        if (inventory == null) {
+            return;
+        }
+        buildPage();
+    }
+
     private void buildPage() {
         inventory.clear();
         List<ItemStack> all = getItems();
+        int slotCount = getContentSlotCount();
         int totalPages = totalPages(all.size());
         if (page >= totalPages) {
             page = Math.max(0, totalPages - 1);
         }
-        int start = page * contentSlots;
-        int end = Math.min(start + contentSlots, all.size());
+        int start = page * slotCount;
+        int end = Math.min(start + slotCount, all.size());
         for (int i = start; i < end; i++) {
             inventory.setItem(i - start, all.get(i));
         }
+        renderControls(totalPages, all.size());
+    }
+
+    protected void renderControls(int totalPages, int itemCount) {
+        int prevSlot = rowsPerPage * 9 - 9;
+        int infoSlot = rowsPerPage * 9 - 5;
+        int nextSlot = rowsPerPage * 9 - 1;
         inventory.setItem(prevSlot, navItem(Material.ARROW,
                 page > 0 ? "<gray>← Previous Page</gray>" : "<dark_gray>← No previous page</dark_gray>",
                 Collections.emptyList()));
         inventory.setItem(infoSlot, navItem(Material.GRAY_STAINED_GLASS_PANE,
                 "<gray>Page <white>" + (page + 1) + "</white>/<white>" + Math.max(totalPages, 1) + "</white>",
-                List.of("<gray>" + all.size() + " entries</gray>")));
+                List.of("<gray>" + itemCount + " entries</gray>")));
         inventory.setItem(nextSlot, navItem(Material.ARROW,
                 page < totalPages - 1 ? "<gray>Next Page →</gray>" : "<dark_gray>No next page →</dark_gray>",
                 Collections.emptyList()));
     }
 
-    private int totalPages(int itemCount) {
-        if (itemCount == 0) {
-            return 1;
+    protected boolean onControlClick(InventoryClickEvent event, int slot, int page, int totalPages) {
+        int prevSlot = rowsPerPage * 9 - 9;
+        int infoSlot = rowsPerPage * 9 - 5;
+        int nextSlot = rowsPerPage * 9 - 1;
+        if (slot == prevSlot) {
+            if (page > 0) {
+                this.page--;
+                buildPage();
+            }
+            return true;
         }
-        return (int) Math.ceil(itemCount / (double) contentSlots);
+        if (slot == nextSlot) {
+            if (page < totalPages - 1) {
+                this.page++;
+                buildPage();
+            }
+            return true;
+        }
+        return slot == infoSlot;
     }
 
-    private ItemStack navItem(Material material, String nameMM, List<String> loreMM) {
+    private int totalPages(int itemCount) {
+        int slotCount = getContentSlotCount();
+        if (itemCount == 0 || slotCount <= 0) {
+            return 1;
+        }
+        return (int) Math.ceil(itemCount / (double) slotCount);
+    }
+
+    protected ItemStack navItem(Material material, String nameMM, List<String> loreMM) {
         ItemStack item = new ItemStack(material);
         ItemMeta meta = item.getItemMeta();
         if (meta != null) {
@@ -114,33 +149,18 @@ public abstract class PaginatedGUI implements Listener {
         if (!event.getInventory().equals(inventory)) {
             return;
         }
-        // Read-only GUI: cancel every click in the open view, including shift-clicks
-        // from the player inventory that would otherwise move items into the GUI.
         event.setCancelled(true);
         int slot = event.getRawSlot();
         if (slot < 0 || slot >= rowsPerPage * 9) {
             return;
         }
-        if (slot == prevSlot) {
-            if (page > 0) {
-                page--;
-                buildPage();
-            }
-            return;
-        }
-        if (slot == nextSlot) {
-            if (page < totalPages(getItems().size()) - 1) {
-                page++;
-                buildPage();
-            }
-            return;
-        }
-        if (slot == infoSlot) {
-            return;
-        }
-        if (slot < contentSlots) {
+        int slotCount = getContentSlotCount();
+        int totalPages = totalPages(getItems().size());
+        if (slot < slotCount) {
             onItemClick(event, slot, page);
+            return;
         }
+        onControlClick(event, slot, page, totalPages);
     }
 
     @EventHandler
@@ -152,6 +172,14 @@ public abstract class PaginatedGUI implements Listener {
 
     protected final int getPage() {
         return page;
+    }
+
+    protected final void setPage(int page) {
+        this.page = Math.max(0, page);
+    }
+
+    protected final Inventory getInventory() {
+        return inventory;
     }
 
     protected final int getContentSlots() {

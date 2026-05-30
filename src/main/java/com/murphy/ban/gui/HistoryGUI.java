@@ -3,6 +3,7 @@ package com.murphy.ban.gui;
 import com.murphy.ban.MurphyBan;
 import com.murphy.ban.model.Punishment;
 import com.murphy.ban.model.PunishmentType;
+import com.murphy.ban.util.PunishmentFormatter;
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
@@ -54,17 +55,7 @@ public class HistoryGUI extends PaginatedGUI {
             return item;
         }
         boolean isKick = p.type() == PunishmentType.KICK;
-        String status;
-        if (isKick) {
-            status = "<yellow>Issued</yellow>";
-        } else if (p.isRevoked()) {
-            status = "<gold>Revoked</gold>";
-        } else if (p.active() && !p.isExpired()) {
-            status = "<green>Active</green>";
-        } else {
-            status = "<gray>Expired</gray>";
-        }
-        String name = "<white>" + p.type().getDisplayName() + " — " + status;
+        String name = "<white>" + p.type().getDisplayName() + " — " + PunishmentFormatter.resolveStatus(p);
         meta.setDisplayName(LEGACY.serialize(MM.deserialize(name)));
 
         List<String> lore = new ArrayList<>();
@@ -96,7 +87,7 @@ public class HistoryGUI extends PaginatedGUI {
     }
 
     private static String escape(String s) {
-        return s == null ? "" : s.replace("<", "\\<");
+        return PunishmentFormatter.sanitize(s).replace("<", "\\<");
     }
 
     @Override

@@ -18,6 +18,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
+import java.util.UUID;
 
 public abstract class BaseCommand implements TabExecutor {
 
@@ -85,6 +86,15 @@ public abstract class BaseCommand implements TabExecutor {
         BanLogger.debug("resolvePlayer('" + name + "') → uuid=" + target.getUniqueId()
                 + " online=" + target.isOnline() + " hasPlayedBefore=" + target.hasPlayedBefore());
         return Optional.of(target);
+    }
+
+    @SuppressWarnings("deprecation")
+    protected UUID resolveUUID(String name) {
+        Player online = Bukkit.getPlayerExact(name);
+        if (online != null) {
+            return online.getUniqueId();
+        }
+        return Bukkit.getOfflinePlayer(name).getUniqueId();
     }
 
     protected void sendMessage(CommandSender sender, String key, Map<String, String> placeholders) {

@@ -5,6 +5,7 @@ import com.murphy.ban.database.DatabaseManager;
 import com.murphy.ban.model.Punishment;
 import com.murphy.ban.model.PunishmentType;
 import com.murphy.ban.util.BanLogger;
+import com.murphy.ban.util.PunishmentFormatter;
 import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.MiniMessage;
@@ -72,7 +73,7 @@ public class CheckCommand extends BaseCommand {
                     Audience audience = plugin.getAudiences().sender(sender);
                     audience.sendMessage(MM.deserialize(DIVIDER));
                     audience.sendMessage(MM.deserialize(
-                            "<white>" + playerName + "</white> <gray>— Status Check</gray>"));
+                            "<white>" + escape(playerName) + "</white> <gray>— Status Check</gray>"));
                     audience.sendMessage(buildLine("Ban", ban));
                     audience.sendMessage(buildLine("Mute", mute));
                     audience.sendMessage(MM.deserialize(buildWarnLine(counted, aged)));
@@ -109,7 +110,7 @@ public class CheckCommand extends BaseCommand {
     }
 
     private String escape(String s) {
-        return s.replace("<", "\\<");
+        return PunishmentFormatter.sanitize(s).replace("<", "\\<");
     }
 
     @Override

@@ -2,13 +2,12 @@ package com.murphy.ban.commands;
 
 import com.murphy.ban.MurphyBan;
 import com.murphy.ban.util.BanLogger;
-import org.bukkit.OfflinePlayer;
 import org.bukkit.command.CommandSender;
 
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
+import java.util.UUID;
 
 public class UnmuteCommand extends BaseCommand {
 
@@ -28,15 +27,11 @@ public class UnmuteCommand extends BaseCommand {
         if (!requirePermission(sender, "murphyban.unmute")) {
             return;
         }
-        Optional<OfflinePlayer> targetOpt = resolvePlayer(sender, args[0]);
-        if (targetOpt.isEmpty()) {
-            return;
-        }
-        OfflinePlayer target = targetOpt.get();
-        String playerName = target.getName() != null ? target.getName() : args[0];
+        String playerName = args[0];
+        UUID uuid = resolveUUID(playerName);
         String issuer = issuerName(sender);
 
-        plugin.getPunishmentService().unmute(target, issuer)
+        plugin.getPunishmentService().unmute(uuid, issuer)
                 .thenAccept(removed -> {
                     if (removed) {
                         sendMessage(sender, "unmute-success", Map.of("player", playerName));

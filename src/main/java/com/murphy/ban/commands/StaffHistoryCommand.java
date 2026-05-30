@@ -3,6 +3,7 @@ package com.murphy.ban.commands;
 import com.murphy.ban.MurphyBan;
 import com.murphy.ban.gui.HistoryGUI;
 import com.murphy.ban.util.BanLogger;
+import com.murphy.ban.util.PunishmentFormatter;
 import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -55,7 +56,7 @@ public class StaffHistoryCommand extends BaseCommand {
     }
 
     private String escape(String s) {
-        return s == null ? "" : s.replace("<", "\\<");
+        return PunishmentFormatter.sanitize(s).replace("<", "\\<");
     }
 
     @Override

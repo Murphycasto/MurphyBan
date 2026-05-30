@@ -2,6 +2,7 @@ package com.murphy.ban;
 
 import com.murphy.ban.commands.AltsCommand;
 import com.murphy.ban.commands.BanCommand;
+import com.murphy.ban.commands.BanListCommand;
 import com.murphy.ban.commands.BlameCommand;
 import com.murphy.ban.commands.CheckCommand;
 import com.murphy.ban.commands.HistoryCommand;
@@ -9,6 +10,8 @@ import com.murphy.ban.commands.IPBanCommand;
 import com.murphy.ban.commands.KickCommand;
 import com.murphy.ban.commands.MurphyBanCommand;
 import com.murphy.ban.commands.MuteCommand;
+import com.murphy.ban.commands.MuteListCommand;
+import com.murphy.ban.commands.PunishmentListCommand;
 import com.murphy.ban.commands.StaffHistoryCommand;
 import com.murphy.ban.commands.UnbanCommand;
 import com.murphy.ban.commands.UnbanIPCommand;
@@ -166,6 +169,9 @@ public final class MurphyBan extends JavaPlugin {
         bind("blame", new BlameCommand(this));
         bind("staffhistory", new StaffHistoryCommand(this));
         bind("alts", new AltsCommand(this));
+        bind("punishmentlist", new PunishmentListCommand(this));
+        bind("banlist", new BanListCommand(this));
+        bind("mutelist", new MuteListCommand(this));
     }
 
     private void registerPlaceholders() {

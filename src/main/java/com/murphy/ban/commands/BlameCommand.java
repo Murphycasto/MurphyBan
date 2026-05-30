@@ -3,9 +3,9 @@ package com.murphy.ban.commands;
 import com.murphy.ban.MurphyBan;
 import com.murphy.ban.model.Punishment;
 import com.murphy.ban.util.BanLogger;
+import com.murphy.ban.util.PunishmentFormatter;
 import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.text.minimessage.MiniMessage;
-import org.bukkit.OfflinePlayer;
 import org.bukkit.command.CommandSender;
 
 import java.text.SimpleDateFormat;
@@ -13,7 +13,7 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
+import java.util.UUID;
 
 public class BlameCommand extends BaseCommand {
 
@@ -37,14 +37,10 @@ public class BlameCommand extends BaseCommand {
         if (!requirePermission(sender, "murphyban.history")) {
             return;
         }
-        Optional<OfflinePlayer> targetOpt = resolvePlayer(sender, args[0]);
-        if (targetOpt.isEmpty()) {
-            return;
-        }
-        OfflinePlayer target = targetOpt.get();
-        String playerName = target.getName() != null ? target.getName() : args[0];
+        String playerName = args[0];
+        UUID uuid = resolveUUID(playerName);
 
-        MurphyBan.getDatabase().getHistory(target.getUniqueId())
+        MurphyBan.getDatabase().getHistory(uuid)
                 .thenAccept(history -> {
                     if (history.isEmpty()) {
                         sendMessage(sender, "no-history", Map.of("player", playerName));
@@ -79,7 +75,7 @@ public class BlameCommand extends BaseCommand {
     }
 
     private String escape(String s) {
-        return s == null ? "" : s.replace("<", "\\<");
+        return PunishmentFormatter.sanitize(s).replace("<", "\\<");
     }
 
     @Override

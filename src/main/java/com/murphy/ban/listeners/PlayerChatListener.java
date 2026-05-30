@@ -5,6 +5,7 @@ import com.murphy.ban.MurphyBan;
 import com.murphy.ban.database.DatabaseManager;
 import com.murphy.ban.model.Punishment;
 import com.murphy.ban.model.PunishmentType;
+import com.murphy.ban.util.PunishmentFormatter;
 import net.kyori.adventure.text.Component;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -75,7 +76,7 @@ public class PlayerChatListener implements Listener {
 
     private void sendMuteScreen(Player player, Punishment mute) {
         Map<String, String> placeholders = Map.of(
-                "reason", mute.reason(),
+                "reason", PunishmentFormatter.sanitize(mute.reason()),
                 "expires", mute.getFormattedExpiry(),
                 "remaining", mute.getFormattedExpiry());
         Component msg = plugin.getMessageManager().get("mute-screen", placeholders);

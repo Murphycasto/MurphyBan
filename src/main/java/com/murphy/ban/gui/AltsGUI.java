@@ -1,6 +1,7 @@
 package com.murphy.ban.gui;
 
 import com.murphy.ban.MurphyBan;
+import com.murphy.ban.util.PunishmentFormatter;
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
@@ -68,7 +69,7 @@ public class AltsGUI extends PaginatedGUI {
     }
 
     private static String escape(String s) {
-        return s == null ? "" : s.replace("<", "\\<");
+        return PunishmentFormatter.sanitize(s).replace("<", "\\<");
     }
 
     @Override

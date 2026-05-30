@@ -1,15 +1,33 @@
 package com.murphy.ban;
 
+import com.murphy.ban.model.PunishmentType;
 import com.murphy.ban.util.DurationParser;
+import org.bukkit.Material;
 import org.bukkit.configuration.file.FileConfiguration;
 
+import java.util.EnumMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 
 public class ConfigManager {
 
     private static final long DEFAULT_WARN_EXPIRE_MILLIS = TimeUnit.DAYS.toMillis(30L);
+
+    private static final Map<PunishmentType, Material> DEFAULT_LIST_ITEMS = new EnumMap<>(PunishmentType.class);
+
+    static {
+        DEFAULT_LIST_ITEMS.put(PunishmentType.BAN, Material.RED_WOOL);
+        DEFAULT_LIST_ITEMS.put(PunishmentType.IP_BAN, Material.MAGENTA_WOOL);
+        DEFAULT_LIST_ITEMS.put(PunishmentType.MUTE, Material.ORANGE_WOOL);
+        DEFAULT_LIST_ITEMS.put(PunishmentType.KICK, Material.YELLOW_WOOL);
+        DEFAULT_LIST_ITEMS.put(PunishmentType.WARN, Material.LIME_WOOL);
+    }
+
+    private static final Material DEFAULT_FILLER = Material.GRAY_STAINED_GLASS_PANE;
+    private static final int DEFAULT_PAGE_SIZE = 45;
+    private static final int MAX_PAGE_SIZE = 45;
 
     private FileConfiguration config() {
         return MurphyBan.getInstance().getConfig();
@@ -96,5 +114,43 @@ public class ConfigManager {
                     "Invalid warns.expire-after '" + trimmed + "' in config.yml; defaulting to 30 days.");
             return DEFAULT_WARN_EXPIRE_MILLIS;
         }
+    }
+
+    public Material getPunishmentListItem(PunishmentType type) {
+        Material fallback = DEFAULT_LIST_ITEMS.getOrDefault(type, Material.PAPER);
+        return switch (type) {
+            case BAN -> readMaterial("punishmentlist.item-ban", fallback);
+            case IP_BAN -> readMaterial("punishmentlist.item-ban", fallback);
+            case MUTE -> readMaterial("punishmentlist.item-mute", fallback);
+            case KICK -> readMaterial("punishmentlist.item-kick", fallback);
+            case WARN -> readMaterial("punishmentlist.item-warn", fallback);
+        };
+    }
+
+    public Material getPunishmentListFiller() {
+        return readMaterial("punishmentlist.filler-glass", DEFAULT_FILLER);
+    }
+
+    public int getPunishmentListPageSize() {
+        int raw = config().getInt("punishmentlist.page-size", DEFAULT_PAGE_SIZE);
+        if (raw < 1) {
+            return 1;
+        }
+        return Math.min(raw, MAX_PAGE_SIZE);
+    }
+
+    private Material readMaterial(String key, Material fallback) {
+        String raw = config().getString(key);
+        if (raw == null || raw.isBlank()) {
+            return fallback;
+        }
+        Material match = Material.matchMaterial(raw.trim());
+        if (match == null) {
+            MurphyBan.getInstance().getLogger().log(Level.WARNING,
+                    "Invalid material '" + raw + "' at " + key + " in config.yml; falling back to "
+                            + fallback.name() + ".");
+            return fallback;
+        }
+        return match;
     }
 }

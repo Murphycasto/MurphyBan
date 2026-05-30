@@ -43,6 +43,7 @@ MurphyBan is a self-contained punishment system built to replace LiteBans, Advan
 - `/blame` — quick chat dump of a player's last 5 punishments (type, reason, issuer, date)
 - `/staffhistory` — paginated GUI of all punishments issued by a specific staff member (case-insensitive)
 - `/alts` — paginated GUI of every account sharing an IP with the target, with ban status per player head
+- `/punishmentlist`, `/banlist`, `/mutelist` — paginated GUI of every punishment with live **category** and **status** filters
 - Staff alert channel (`murphyban.alerts`) notified on every ban, mute, kick, warn, and alt join event
 
 ### Alt Detection
@@ -105,6 +106,9 @@ MurphyBan is a self-contained punishment system built to replace LiteBans, Advan
 | `/blame <player>` | — | `murphyban.history` | Print a player's last 5 punishments in chat. |
 | `/staffhistory <staff>` | `/sh` | `murphyban.history` | Open a paginated GUI of all punishments issued by a staff member. |
 | `/alts <player>` | — | `murphyban.alts` | Open a GUI of all accounts sharing any IP with the target. |
+| `/punishmentlist [category]` | `/punishments`, `/pl` | `murphyban.history` | Open a paginated GUI of all punishments. Optional category arg: `ban`, `mute`, `kick`, `warn`, `all`. Cycle category and status filters in the GUI. |
+| `/banlist` | — | `murphyban.history` | Shortcut to the punishment list pre-filtered to bans. |
+| `/mutelist` | — | `murphyban.history` | Shortcut to the punishment list pre-filtered to mutes. |
 | `/murphyban about` | — | *(none — open to all)* | Show plugin version, database type, connection status, and server version. |
 | `/murphyban reload` | — | `murphyban.admin` | Reload `config.yml` and `messages.yml` from disk without restarting. |
 
@@ -199,6 +203,20 @@ warns:
   # The background sweeper also marks them inactive within 5 minutes.
   # Set to 0 to never expire warns by age.
   expire-after: 30d
+
+punishmentlist:
+  # Wool color per punishment type in the /punishmentlist GUI.
+  # Accepts any Bukkit Material name. Invalid names log a warning and fall back to defaults.
+  item-ban: RED_WOOL
+  item-mute: ORANGE_WOOL
+  item-kick: YELLOW_WOOL
+  item-warn: LIME_WOOL
+
+  # Stained glass material used for filler slots in the GUI footer.
+  filler-glass: GRAY_STAINED_GLASS_PANE
+
+  # Number of punishment entries per page (1-45). Values above 45 are clamped.
+  page-size: 45
 ```
 
 ---
@@ -364,6 +382,10 @@ no-alts: "{prefix}<gray>No alternate accounts found for <white>{player}</white>.
 
 # Placeholders: {prefix}, {staff}
 no-staff-history: "{prefix}<gray><white>{staff}</white> has not issued any punishments."
+
+# Sent by /punishmentlist, /banlist, /mutelist when no rows match the current filter.
+# Placeholders: {prefix}
+no-punishments: "{prefix}<gray>No punishments found matching the current filter."
 
 # Shown when a GUI page has no entries to display.
 # Placeholders: {prefix}

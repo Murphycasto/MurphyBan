@@ -28,3 +28,14 @@ warns:
   auto-punish-duration: 1d
   # Warns older than this do not count toward the threshold. Set to 0 to never expire.
   expire-after: 30d
+
+punishmentlist:
+  # Wool color per punishment type. Accepts Bukkit Material names.
+  item-ban: RED_WOOL
+  item-mute: ORANGE_WOOL
+  item-kick: YELLOW_WOOL
+  item-warn: LIME_WOOL
+  # Stained glass color for filler slots. Accepts Bukkit Material names.
+  filler-glass: GRAY_STAINED_GLASS_PANE
+  # Number of punishment entries per page (max 45).
+  page-size: 45

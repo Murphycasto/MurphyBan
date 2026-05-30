@@ -74,6 +74,19 @@ commands:
     description: View a player's known alt accounts.
     usage: /alts <player>
     permission: murphyban.alts
+  punishmentlist:
+    description: Open a paginated list of all punishments with category and status filters.
+    usage: /punishmentlist [category]
+    permission: murphyban.history
+    aliases: [punishments, pl]
+  banlist:
+    description: Open the punishment list pre-filtered to bans.
+    usage: /banlist
+    permission: murphyban.history
+  mutelist:
+    description: Open the punishment list pre-filtered to mutes.
+    usage: /mutelist
+    permission: murphyban.history
   murphyban:
     description: MurphyBan admin command.
     usage: /murphyban <about|reload>

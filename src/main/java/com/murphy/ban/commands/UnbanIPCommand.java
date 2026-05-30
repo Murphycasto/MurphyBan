@@ -2,13 +2,12 @@ package com.murphy.ban.commands;
 
 import com.murphy.ban.MurphyBan;
 import com.murphy.ban.util.BanLogger;
-import org.bukkit.OfflinePlayer;
 import org.bukkit.command.CommandSender;
 
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
+import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
 public class UnbanIPCommand extends BaseCommand {
@@ -41,15 +40,11 @@ public class UnbanIPCommand extends BaseCommand {
             return;
         }
 
-        Optional<OfflinePlayer> targetOpt = resolvePlayer(sender, input);
-        if (targetOpt.isEmpty()) {
-            return;
-        }
-        OfflinePlayer target = targetOpt.get();
-        String playerName = target.getName() != null ? target.getName() : input;
+        String playerName = input;
+        UUID uuid = resolveUUID(playerName);
         BanLogger.debug("/" + COMMAND_NAME + " resolving IPs for player: " + playerName);
 
-        MurphyBan.getDatabase().getKnownIPs(target.getUniqueId())
+        MurphyBan.getDatabase().getKnownIPs(uuid)
                 .thenCompose(ips -> tryUnbanFirst(ips, 0, issuer))
                 .thenAccept(removed -> respond(sender, playerName, removed))
                 .exceptionally(ex -> handleFailure(sender, ex));
